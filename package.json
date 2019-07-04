@@ -1,0 +1,10 @@
+{
+  "name": "@teambun/motion",
+  "version": "1.0.0",
+  "main": "index.js",
+  "author": "relaxgo <patientzhe@gmail.com>",
+  "license": "MIT",
+  "dependencies": {
+    "@popmotion/easing": "^1.0.2"
+  }
+}
