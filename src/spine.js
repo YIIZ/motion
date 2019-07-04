@@ -78,18 +78,9 @@ export class SpineAnimation {
     return cubicBezier(...curve)
   }
 
-  addScaleTimeline(name, points) {
-    const { entities } = this
-    entities[name] = entities[name] || {}
-    const entity = entities[name]
-    const line = new ScaleTimeline(entity, points)
-    this.lines.push(line)
-    return this
-  }
-
   reverse() {
     const endTime = this.lines.reduce((t, l) => {
-      const tt = l.points[l.points.length - 1].time
+      const tt = l.keys[l.keys.length - 1].time
       return t > tt ? t : tt
     }, 0)
 
@@ -145,23 +136,28 @@ export class SpineAnimation {
   }
 
   handleUpdate() {
-    const { entities, targets } = this
-    Object.keys(targets)
+    const { entities, attachments } = this
+    Object.keys(attachments)
     .forEach(name => {
       const entity = entities[name]
-      const ts = targets[name]
+      const ts = attachments[name]
       if (ts) ts.forEach(t => this.assign(t, entity))
     })
   }
 
-  targets = {}
-  bind(name, target) {
-    if (!this.targets[name]) {
-      this.targets[name] = []
+  attachments = {}
+  attach(name, attachment) {
+    if (!this.attachments[name]) {
+      this.attachments[name] = []
     }
-    const ts = this.targets[name]
-    ts.push(target)
+    const ts = this.attachments[name]
+    ts.push(attachment)
     return this
+  }
+
+  bind(name, attachment) {
+    console.warn('use .attach instead of, .bind is deprecated')
+    this.attach(name, attachment)
   }
 
   assign(t, entity) {
