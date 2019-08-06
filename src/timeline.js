@@ -1,20 +1,30 @@
 // keys: [{ time: 0, value: { x, y } }]
+import { linear, cubicBezier } from '@popmotion/easing'
 
 export class Timeline {
   constructor(value, keys, meta) {
-    Object.assign(this, meta)
     this.value = value
     this.keys = keys
     this.callbacks = []
     if (value !== 'number' && keys && keys.length > 0) {
       this.fields = Object.keys(keys[0].value)
     }
+
+    Object.assign(this, meta)
   }
 
   update(time) {
-    const { keys } = this
-    const endAt = keys.findIndex(p => p.time > time)
+    const { keys, loop } = this
+    if (!keys || keys.length === 0) return
 
+    if (loop) {
+      const endTime = keys[keys.length - 1].time
+      if (time > endTime) time = time % endTime
+    }
+
+    const endAt = keys.findIndex(p => p.time >= time)
+
+    if (endAt === 0 && !this.isBegin) return
     if (endAt === 0) return this.begain()
     if (endAt < 0) return this.end()
 
@@ -38,7 +48,10 @@ export class Timeline {
   }
 
   interpolate(t, start, end) {
-    const { curve } = start
+    let { curve } = start
+    if (typeof curve === 'string' || typeof curve === 'undefined') {
+      curve = curveFuncs[curve] || curveFuncs.stepped
+    }
 
     const t0 = start.time
     const t1 = end.time
@@ -72,4 +85,11 @@ export class Timeline {
     this.keys = null
     this.value = null
   }
+}
+
+const curveFuncs = {
+  stepped: function() {
+    return 0
+  },
+  linear,
 }
