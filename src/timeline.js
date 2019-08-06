@@ -22,26 +22,17 @@ export class Timeline {
       if (time > endTime) time = time % endTime
     }
 
-    const endAt = keys.findIndex(p => p.time >= time)
+    const nextAt = keys.findIndex(p => p.time > time)
 
-    if (endAt === 0 && !this.isBegin) return
-    if (endAt === 0) return this.begain()
-    if (endAt < 0) return this.end()
+    if (nextAt === 0) return
+    if (nextAt < 0) return this.end()
 
-    const start = keys[endAt - 1]
-    const end = keys[endAt]
+    const start = keys[nextAt - 1]
+    const end = keys[nextAt]
     this.interpolate(time, start, end)
   }
 
-  begain() {
-    this.isBegin = true
-    this.isEnd = false
-    const k = this.keys[0]
-    this.interpolate(0, k, k)
-  }
-
   end() {
-    this.isBegin = false
     this.isEnd = true
     const k = this.keys[this.keys.length - 1]
     this.interpolate(0, k, k)
