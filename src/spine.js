@@ -157,7 +157,7 @@ export class SpineAnimation {
 
   bind(name, attachment) {
     console.warn('use .attach instead of, .bind is deprecated')
-    this.attach(name, attachment)
+    return this.attach(name, attachment)
   }
 
   assign(t, entity) {
