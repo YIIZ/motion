@@ -23,6 +23,7 @@ export class Timeline {
     }
 
     const nextAt = keys.findIndex(p => p.time > time)
+    this.keyId = nextAt - 1
 
     if (nextAt === 0) return
     if (nextAt < 0) return this.end()
