@@ -9,6 +9,7 @@ export class Timeline {
     if (value !== 'number' && keys && keys.length > 0) {
       this.fields = Object.keys(keys[0].value)
     }
+    // field in meta
 
     Object.assign(this, meta)
   }
@@ -50,12 +51,14 @@ export class Timeline {
     const d = t1 - t0
     const r = d === 0 ? 0 : curve((t - t0)/(t1 - t0))
 
-    if (!this.fields || this.fields.length === 0) {
-      this.value = this.mix(start.value, end.value, r)
-    } else {
+    if (this.fields && this.fields.length > 0) {
       this.fields.forEach(f => {
         this.value[f] = this.mix(start.value[f], end.value[f], r)
       })
+    } else if (this.field) {
+      this.value[this.field] = this.mix(start.value, end.value, r)
+    } else {
+      this.value = this.mix(start.value, end.value, r)
     }
 
     if (this.callbacks.length > 0) {
