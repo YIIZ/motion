@@ -39,12 +39,12 @@ export class SpineAnimation {
             entity[field] = {}
             const line = new Timeline(entity[field], keys, { field, name })
             lines.push(line)
-            break;
+            break
           }
           case 'rotate': {
             const line = new Timeline(entity, keys, { field, name })
             lines.push(line)
-            break;
+            break
           }
         }
       })
@@ -61,7 +61,7 @@ export class SpineAnimation {
         const r = parseInt(hex.substr(0, 2), 16) / 255.0
         const g = parseInt(hex.substr(2, 2), 16) / 255.0
         const b = parseInt(hex.substr(4, 2), 16) / 255.0
-        const alpha = (hex.length != 8 ? 255 : parseInt(hex.substr(6, 2), 16)) / 255.0;
+        const alpha = (hex.length != 8 ? 255 : parseInt(hex.substr(6, 2), 16)) / 255.0
         nk.value = { r, g, b, alpha }
       } else if (type === 'rotate') {
         nk.value = { rotation: degRad * k.angle }
@@ -96,7 +96,7 @@ export class SpineAnimation {
     this.ticker = ticker
     this.ticker.add(this.update, this)
 
-    this.promise = new Promise((resolve) => {
+    this.promise = new Promise(resolve => {
       this.resolve = resolve
     })
 
@@ -107,14 +107,15 @@ export class SpineAnimation {
   update(delta) {
     this.escaped += delta * this.timeScale
 
-    const { isReverse, escaped: time } = this
+    const { lines, isReverse, escaped: time } = this
 
     let completed = true
-    this.lines.forEach(l => {
+    for (var l, i = 0, len = lines.length; i < len; i++) {
+      l = lines[i]
       l.update(time)
       const { isEnd, isBegin } = l
       if ((!isReverse && !isEnd) || (isReverse && !isBegin)) completed = false
-    })
+    }
 
     this.handleUpdate()
 
@@ -137,8 +138,7 @@ export class SpineAnimation {
 
   handleUpdate() {
     const { entities, attachments } = this
-    Object.keys(attachments)
-    .forEach(name => {
+    Object.keys(attachments).forEach(name => {
       const entity = entities[name]
       const ts = attachments[name]
       if (ts) ts.forEach(t => this.assign(t, entity))
@@ -169,9 +169,7 @@ export class SpineAnimation {
       t.position.set(x - x1, y - y1)
     }
   }
-
 }
-
 
 function steppd() {
   return 0
@@ -184,4 +182,3 @@ function noop(v) {
 function getBasename(name) {
   return name.split('/').pop()
 }
-

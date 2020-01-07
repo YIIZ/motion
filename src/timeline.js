@@ -23,7 +23,13 @@ export class Timeline {
       if (time > endTime) time = time % endTime
     }
 
-    const nextAt = keys.findIndex(p => p.time > time)
+    let nextAt = -1
+    for (var t, i = 0, len = keys.length; i < len; i++) {
+      if (keys[i].time > time) {
+        nextAt = i
+        break
+      }
+    }
     this.keyId = nextAt - 1
 
     if (nextAt === 0) return
@@ -49,20 +55,25 @@ export class Timeline {
     const t0 = start.time
     const t1 = end.time
     const d = t1 - t0
-    const r = d === 0 ? 0 : curve((t - t0)/(t1 - t0))
+    const r = d === 0 ? 0 : curve((t - t0) / (t1 - t0))
 
-    if (this.fields && this.fields.length > 0) {
-      this.fields.forEach(f => {
-        this.value[f] = this.mix(start.value[f], end.value[f], r)
-      })
-    } else if (this.field) {
-      this.value[this.field] = this.mix(start.value, end.value, r)
+    const { fields, callbacks, value, field } = this
+
+    if (fields && fields.length > 0) {
+      for (let f, i = 0, len = fields.length; i < len; i++) {
+        f = fields[i]
+        value[f] = this.mix(start.value[f], end.value[f], r)
+      }
+    } else if (field) {
+      this.value[field] = this.mix(start.value, end.value, r)
     } else {
       this.value = this.mix(start.value, end.value, r)
     }
 
-    if (this.callbacks.length > 0) {
-      this.callbacks.forEach(cb => cb(this.value))
+    if (callbacks.length > 0) {
+      for (let cb, i = 0, len = Things.length; i < len; i++) {
+        callbacks[i](this.value)
+      }
     }
   }
 
