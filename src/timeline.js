@@ -5,7 +5,6 @@ export class Timeline {
   constructor(value, keys, meta) {
     this.value = value
     this.keys = keys
-    this.callbacks = []
     if (value !== 'number' && keys && keys.length > 0) {
       this.fields = Object.keys(keys[0].value)
     }
@@ -20,30 +19,38 @@ export class Timeline {
 
     if (loop) {
       const endTime = keys[keys.length - 1].time
-      if (time > endTime) time = time % endTime
+      if (time >= endTime) {
+        time = time % endTime
+        if (this.handleLoop) this.handleLoop()
+      }
     }
 
+    const len = keys.length
     let nextAt = -1
-    for (var t, i = 0, len = keys.length; i < len; i++) {
-      if (keys[i].time > time) {
-        nextAt = i
+    for (let t, i = len - 1; i >= 0; i--) {
+      if (keys[i].time <= time) {
+        nextAt = i + 1
         break
       }
     }
+
+    if (nextAt <= 0) return
+
     this.keyId = nextAt - 1
-
-    if (nextAt === 0) return
-    if (nextAt < 0) return this.end()
-
+    this.isBegin = true
+    if (nextAt === len) return this.complete(time)
     const start = keys[nextAt - 1]
     const end = keys[nextAt]
     this.interpolate(time, start, end)
   }
 
-  end() {
-    this.isEnd = true
-    const k = this.keys[this.keys.length - 1]
+  complete() {
+    const { keys, handleComplete } = this
+    this.isComplete = true
+    const k = keys[keys.length - 1]
     this.interpolate(0, k, k)
+
+    if (handleComplete) handleComplete(this.value)
   }
 
   interpolate(t, start, end) {
@@ -57,7 +64,7 @@ export class Timeline {
     const d = t1 - t0
     const r = d === 0 ? 0 : curve((t - t0) / (t1 - t0))
 
-    const { fields, callbacks, value, field } = this
+    const { fields, handleUpdate, value, field } = this
 
     if (fields && fields.length > 0) {
       for (let f, i = 0, len = fields.length; i < len; i++) {
@@ -70,10 +77,8 @@ export class Timeline {
       this.value = this.mix(start.value, end.value, r)
     }
 
-    if (callbacks.length > 0) {
-      for (let cb, i = 0, len = Things.length; i < len; i++) {
-        callbacks[i](this.value)
-      }
+    if (handleUpdate) {
+      handleUpdate(this.value)
     }
   }
 
@@ -82,11 +87,18 @@ export class Timeline {
   }
 
   onUpdate(cb) {
-    this.callbacks.push(cb)
+    this.handleUpdate = cb
+  }
+
+  onLoop(cb) {
+    this.handleLoop = cb
+  }
+
+  onUpdate(cb) {
+    this.handleComplete = cb
   }
 
   destroy() {
-    this.callbacks = null
     this.fields = null
     this.keys = null
     this.value = null

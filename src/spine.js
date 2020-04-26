@@ -113,8 +113,8 @@ export class SpineAnimation {
     for (var l, i = 0, len = lines.length; i < len; i++) {
       l = lines[i]
       l.update(time)
-      const { isEnd, isBegin } = l
-      if ((!isReverse && !isEnd) || (isReverse && !isBegin)) completed = false
+      const { isComplete, isBegin } = l
+      if ((!isReverse && !isComplete) || (isReverse && !isBegin)) completed = false
     }
 
     this.handleUpdate()
