@@ -53,7 +53,7 @@ export class SpineAnimation {
 
   normalizeKeys(keys, type) {
     return keys.map(k => {
-      const { time, curve } = k
+      const { time = 0, curve } = k
       const nk = { time, curve: this.normalizeCurve(curve) }
       if (type === 'color') {
         let { color: hex } = k
@@ -66,7 +66,7 @@ export class SpineAnimation {
       } else if (type === 'rotate') {
         nk.value = { rotation: degRad * k.angle }
       } else {
-        nk.value = { x: k.x, y: k.y }
+        nk.value = { x: k.x || 0, y: k.y || 0 }
       }
       return nk
     })
@@ -138,36 +138,31 @@ export class SpineAnimation {
 
   handleUpdate() {
     const { entities, attachments } = this
-    Object.keys(attachments).forEach(name => {
+    for (var i = 0, len = attachments.length, attachment; i < len; i++) {
+      attachment = attachments[i]
+      const { name, node } = attachment
       const entity = entities[name]
-      const ts = attachments[name]
-      if (ts) ts.forEach(t => this.assign(t, entity))
-    })
+      if (entity.rotation || entity.rotation == 0) node.rotation = entity.rotation
+      if (entity.alpha || entity.alpha == 0) node.alpha = entity.alpha
+      if (entity.scale) node.scale.copyFrom(entity.scale)
+      if (entity.translate) {
+        if (!attachment.position) attachment.position = node.position.clone()
+        const { x = 0, y = 0 } = entity.translate
+        node.position.set(attachment.position.x + x, attachment.position.y + y)
+      }
+    }
   }
 
-  attachments = {}
-  attach(name, attachment) {
-    if (!this.attachments[name]) {
-      this.attachments[name] = []
-    }
-    const ts = this.attachments[name]
-    ts.push(attachment)
+  attachments = []
+  attach(name, node) {
+    if (!node) return this
+    this.attachments.push({ name, node })
     return this
   }
 
-  bind(name, attachment) {
+  bind(name, node) {
     console.warn('use .attach instead of, .bind is deprecated')
-    return this.attach(name, attachment)
-  }
-
-  assign(t, entity) {
-    Object.assign(t, entity)
-    if (entity.translate) {
-      if (!entity.position) entity.position = t.position.clone()
-      const { x, y } = entity.position
-      const { x: x1, y: y1 } = entity.translate
-      t.position.set(x - x1, y - y1)
-    }
+    return this.attach(name, node)
   }
 }
 
