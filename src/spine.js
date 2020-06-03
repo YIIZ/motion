@@ -14,24 +14,24 @@ export class SpineAnimation {
     this.entities = entities
     this.escaped = 0
 
-    Object.keys(slots).map(n => {
+    Object.keys(slots).map((n) => {
       const name = basename ? getBasename(n) : n
       entities[name] = entities[name] || {}
       const entity = entities[name]
       const slot = slots[n]
-      Object.keys(slot).forEach(field => {
+      Object.keys(slot).forEach((field) => {
         const keys = this.normalizeKeys(slot[field], 'color')
         const line = new Timeline(entity, keys, { field, name })
         lines.push(line)
       })
     })
 
-    Object.keys(bones).map(n => {
+    Object.keys(bones).map((n) => {
       const name = basename ? getBasename(n) : n
       entities[name] = entities[name] || {}
       const entity = entities[name]
       const bone = bones[n]
-      Object.keys(bone).forEach(field => {
+      Object.keys(bone).forEach((field) => {
         const keys = this.normalizeKeys(bone[field], field)
         switch (field) {
           case 'scale':
@@ -52,7 +52,7 @@ export class SpineAnimation {
   }
 
   normalizeKeys(keys, type) {
-    return keys.map(k => {
+    return keys.map((k) => {
       const { time = 0, curve } = k
       const nk = { time, curve: this.normalizeCurve(curve) }
       if (type === 'color') {
@@ -96,7 +96,7 @@ export class SpineAnimation {
     this.ticker = ticker
     this.ticker.add(this.update, this)
 
-    this.promise = new Promise(resolve => {
+    this.promise = new Promise((resolve) => {
       this.resolve = resolve
     })
 
@@ -142,6 +142,7 @@ export class SpineAnimation {
       attachment = attachments[i]
       const { name, node } = attachment
       const entity = entities[name]
+      if (!node || node._destroyed) continue // TODO 是否应该有这里检查node
       if (entity.rotation || entity.rotation == 0) node.rotation = entity.rotation
       if (entity.alpha || entity.alpha == 0) node.alpha = entity.alpha
       if (entity.scale) node.scale.copyFrom(entity.scale)
