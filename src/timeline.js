@@ -1,6 +1,7 @@
-// keys: [{ time: 0, value: { x, y } }]
-import { linear, cubicBezier } from '@popmotion/easing'
+import { linear, cubicBezier } from '@teambun/motion'
+import ticker from 'ticker'
 
+// keys: [{ time: 0, value: { x, y }, curve }]
 export class Timeline {
   constructor(value, keys, meta) {
     this.value = value
@@ -17,10 +18,11 @@ export class Timeline {
     const { keys, loop } = this
     if (!keys || keys.length === 0) return
 
-    if (loop) {
+    if (loop > 0) {
       const endTime = keys[keys.length - 1].time
       if (time >= endTime) {
         time = time % endTime
+        this.loop -= 1
         if (this.handleLoop) this.handleLoop()
       }
     }
@@ -50,6 +52,7 @@ export class Timeline {
     const k = keys[keys.length - 1]
     this.interpolate(0, k, k)
 
+    this.stop()
     if (handleComplete) handleComplete(this.value)
   }
 
@@ -88,14 +91,17 @@ export class Timeline {
 
   onUpdate(cb) {
     this.handleUpdate = cb
+    return this
   }
 
   onLoop(cb) {
     this.handleLoop = cb
+    return this
   }
 
-  onUpdate(cb) {
+  onComplete(cb) {
     this.handleComplete = cb
+    return this
   }
 
   destroy() {
@@ -103,10 +109,35 @@ export class Timeline {
     this.keys = null
     this.value = null
   }
+
+  destroyWithPIXI(node) {
+    this.destroyDetect = () => {
+      if (node._destroyed) {
+        this.destroy()
+      }
+    }
+  }
+
+  tick = (delta) => {
+    this.escaped += delta
+    this.update(this.escaped)
+  }
+
+  start() {
+    this.escaped = 0
+    this.tick(0)
+    ticker.add(this.tick)
+    return this
+  }
+
+  stop() {
+    ticker.remove(this.tick)
+    return this
+  }
 }
 
 const curveFuncs = {
-  stepped: function() {
+  stepped: function () {
     return 0
   },
   linear,

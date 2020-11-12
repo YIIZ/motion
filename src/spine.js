@@ -1,5 +1,5 @@
 import { Timeline } from './timeline.js'
-import { linear, cubicBezier } from '@popmotion/easing'
+import { linear, cubicBezier } from '@teambun/motion'
 
 const degRad = Math.PI / 180
 
