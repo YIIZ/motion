@@ -31,7 +31,7 @@ class Ticker {
     if (listenersOut.length > 0) {
       for (var i = 0, len = listenersOut.length; i < len; i++) {
         const index = listeners.indexOf(listenersOut[i])
-        if (index < 0) return
+        if (index < 0) continue
         listeners.splice(index, 1)
       }
       listenersOut.length = 0
@@ -49,18 +49,17 @@ class Ticker {
     requestAnimationFrame(this.tick)
   }
 
-  add(handler) {
+  add(handler: Function) {
     this.listenersIn.push(handler)
     if (!this.started) {
       this.start()
     }
   }
 
-  remove(handler) {
+  remove(handler: Function) {
     this.listenersOut.push(handler)
   }
 }
 
 const ticker = new Ticker()
-window.tt = ticker
 export default ticker
