@@ -52,7 +52,7 @@ export class Timeline {
     const k = keys[keys.length - 1]
     this.interpolate(0, k, k)
 
-    this.stop()
+    ticker.remove(this.tick)
     if (handleComplete) handleComplete(this.value)
   }
 
@@ -104,6 +104,11 @@ export class Timeline {
     return this
   }
 
+  onStop(cb) {
+    this.handleStop = cb
+    return this
+  }
+
   destroy() {
     this.fields = null
     this.keys = null
@@ -132,6 +137,7 @@ export class Timeline {
 
   stop() {
     ticker.remove(this.tick)
+    if (this.handleStop) this.handleStop()
     return this
   }
 }
